@@ -31,6 +31,7 @@ export default {
   },
   methods: {
     handleChange(value) {
+      this.selectedValue = value;
       console.log("Selected value:", value);
     },
     async fetchData() {

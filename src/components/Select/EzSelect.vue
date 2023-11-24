@@ -15,7 +15,8 @@
         :key="option[valueField]"
         :value="option[valueField]"
         :selected="
-          selectedOption && option[valueField] === selectedOption[valueField]
+          selectedOption &&
+          selectedOption.some((obj) => obj[valueField]) === option[valueField]
         "
       >
         {{ option[nameField] }}
@@ -26,10 +27,14 @@
         <div
           :class="[
             'ez-select__display',
-            { 'ez-select__display--placeholder': !selectedOption[valueField] },
+            { 'ez-select__display--placeholder': selectedOption.length > 0 },
           ]"
         >
-          {{ selectedOption && selectedOption[nameField] }}
+          {{
+            selectedOption.length > 0
+              ? selectedOption.map((obj) => obj[nameField]).join(",")
+              : "All Categories"
+          }}
         </div>
         <img v-if="expanded" src="../../assets/angle-up-solid.svg" />
         <img v-else src="../../assets/angle-down-solid.svg" />
@@ -48,7 +53,10 @@
                 <ez-option
                   class="child"
                   :option="child"
-                  :disabled="child.id === selectedOption.id"
+                  :selected="
+                    selectedOption.some((obj) => obj[valueField]) ===
+                    child[valueField]
+                  "
                   >{{ child.name }}</ez-option
                 >
               </li>
@@ -82,11 +90,11 @@ export default {
       default: "name",
     },
     value: {
-      type: [Number, String, Object],
+      type: [Number, String, Object, Array],
       default: () => null,
     },
     selected: {
-      type: [Number, String],
+      type: [Number, String, Object, Array],
       required: false,
     },
     disabled: {
@@ -110,16 +118,16 @@ export default {
     return {
       id: null,
       expanded: false,
-      selectedOption: null,
+      selectedOption: [{ name: "All Categories", id: 1 }],
       originalValue: null,
     };
   },
   methods: {
     toggle() {
-      this.expanded = !this.expanded;
+      this.expanded = true;
     },
     setValue(option, emitEvent = true) {
-      this.selectedOption = option;
+      this.selectedOption = [...this.selectedOption, option];
 
       if (emitEvent) {
         this.$emit("change", this.selectedOption);
@@ -134,24 +142,22 @@ export default {
       }
     },
     onCreated() {
-      const firstOption = { name: "All Categories" };
       const value =
         typeof this.value === "object"
           ? this.value
           : this.options.find((o) => o[this.valueField] === this.value);
-      this.selectedOption = value || firstOption;
+      this.selectedOption = value || [];
       this.originalValue = this.selectedOption;
     },
   },
   watch: {
     selected() {
-      const firstOption = this.options.length ? this.options[0] : null;
       const value =
         typeof this.selected === "object"
           ? this.selected
           : this.options.find((o) => o[this.valueField] === this.selected);
 
-      this.selectedOption = value || firstOption;
+      this.selectedOption = value || [];
       this.originalValue = this.selectedOption;
     },
     options() {
@@ -302,6 +308,10 @@ $selected-border-color: #4d7cfe;
     text-align: start;
 
     &:hover {
+      background-color: $color-gray-b4;
+    }
+
+    &--selected {
       background-color: $color-gray-b4;
     }
 

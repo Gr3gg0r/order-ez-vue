@@ -10,7 +10,8 @@
     :label="label"
     :options="categories"
     @change="onChange"
-  />
+  >
+  </ez-select>
 </template>
 
 <script>
@@ -26,7 +27,7 @@ export default {
       required: true,
     },
     selected: {
-      type: [Number, String],
+      type: [Number, String, Object, Array],
       required: false,
     },
     disabled: {
